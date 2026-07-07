@@ -5,119 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國考法條高效率連連看</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         h1 { color: #333; margin-bottom: 5px; }
-        
-        .menu-container, .game-zone, .result-zone {
-            width: 100%;
-            max-width: 800px;
-            text-align: center;
-        }
-        
+        .menu-container, .game-zone, .result-zone { width: 100%; max-width: 800px; text-align: center; }
         .hidden { display: none !important; }
         .menu-container { margin: 30px auto; }
-        
-        .breadcrumbs {
-            font-size: 1.1rem;
-            color: #666;
-            margin-bottom: 20px;
-            background: #e0f2f1;
-            padding: 8px 15px;
-            border-radius: 5px;
-            display: inline-block;
-        }
-
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .law-btn {
-            background: white;
-            border: 2px solid #FFC107;
-            border-radius: 8px;
-            padding: 25px 40px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: all 0.2s;
-            user-select: none;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #333;
-        }
-        .law-btn:hover {
-            border-color: #FFA000;
-            background-color: #FFFDE7;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0,0,0,0.1);
-        }
-
-        .action-btn {
-            background-color: #607d8b;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-bottom: 15px;
-            transition: background 0.2s;
-        }
+        .breadcrumbs { font-size: 1.1rem; color: #666; margin-bottom: 20px; background: #e0f2f1; padding: 8px 15px; border-radius: 5px; display: inline-block; }
+        .button-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px; }
+        .law-btn { background: white; border: 2px solid #FFC107; border-radius: 8px; padding: 25px 40px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.2s; user-select: none; font-size: 1.2rem; font-weight: bold; color: #333; }
+        .law-btn:hover { border-color: #FFA000; background-color: #FFFDE7; transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0,0,0,0.1); }
+        .action-btn { background-color: #607d8b; color: white; border: none; border-radius: 5px; padding: 10px 20px; font-size: 1rem; cursor: pointer; margin-bottom: 15px; transition: background 0.2s; }
         .action-btn:hover { background-color: #455a64; }
         .primary-btn { background-color: #4caf50; }
         .primary-btn:hover { background-color: #388e3c; }
-
         .game-zone { display: flex; flex-direction: column; align-items: center; }
-        
-        .timer-badge {
-            background-color: #2196F3;
-            color: white;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .game-container {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            margin-top: 10px;
-        }
+        .timer-badge { background-color: #2196F3; color: white; padding: 6px 15px; border-radius: 20px; font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .game-container { display: flex; justify-content: space-around; width: 100%; margin-top: 10px; }
         .column { display: flex; flex-direction: column; gap: 15px; width: 47%; }
-        .card {
-            background: white;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: all 0.2s;
-            text-align: left;
-            user-select: none;
-        }
+        .card { background: white; border: 2px solid #ccc; border-radius: 8px; padding: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.2s; text-align: left; user-select: none; }
         .card:hover { border-color: #2196F3; }
         .card.selected { border-color: #2196F3; background-color: #e3f2fd; }
         .card.matched { background-color: #c8e6c9; border-color: #4caf50; cursor: default; color: #2e7d32; }
         .card.wrong { border-color: #f44336 !important; background-color: #ffebee !important; color: #c62828; }
-
         .result-zone { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
         .score-board { font-size: 1.5rem; margin-bottom: 15px; color: #333; }
         .time-board { font-size: 1.2rem; color: #666; margin-bottom: 25px; }
         .score-number, .time-number { font-size: 2.2rem; color: #4caf50; font-weight: bold; }
         .time-number { color: #2196F3; font-size: 1.8rem; }
-
         .review-table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
         .review-table th, .review-table td { padding: 12px 15px; border: 1px solid #e0e0e0; }
         .review-table th { background-color: #f5f5f5; color: #555; }
@@ -177,35 +91,104 @@
     </div>
 
     <script>
-        let lawDatabase = null; 
-        let currentMenuLevel = 'subject'; // subject -> chapter -> section
+        // 📥 你的專屬法條資料庫（直接合併在網頁中，免除外部讀取限制！）
+        const lawDatabase = {
+          "constitutional": {
+            "title": "憲法",
+            "chapters": {
+              "ch2": {
+                "name": "第二章 人民之權利義務",
+                "sections": {
+                  "core": {
+                    "name": "核心權利與基本義務",
+                    "data": [
+                      { "id": "憲法第7條", "text": "中華民國人民，無分男女、宗教、種族、階級、黨派，在法律上一律平等。" },
+                      { "id": "憲法第22條", "text": "凡人民之其他自由及權利，不妨害社會秩序公共利益者，均受憲法之保障。" },
+                      { "id": "憲法第23條", "text": "以上各條列舉之自由權利，除為防止妨礙他人自由、避免緊急危難、維持社會秩序，或增進公共利益所必要者外，不得以法律限制之。" }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "civil": {
+            "title": "民法",
+            "chapters": {
+              "general": {
+                "name": "第一編 總則",
+                "sections": {
+                  "core": {
+                    "name": "總則編核心條文",
+                    "data": [
+                      { "id": "民法第1條", "text": "民事，法律所未規定者，依習慣；無習慣者，依法理。" },
+                      { "id": "民法第6條", "text": "人之權利能力，始於出生，終於死亡。" },
+                      { "id": "民法第12條", "text": "滿十八歲為成年。" }
+                    ]
+                  }
+                }
+              },
+              "obligations_each": {
+                "name": "第二編 債 (各種之債)",
+                "sections": {
+                  "sale": {
+                    "name": "第一節 買賣 (通則與效力)",
+                    "data": [
+                      { "id": "民法第345條", "text": "稱買賣者，謂當事人約定一方移轉財產權於他方，他方支付價金之契約。當事人就標的物及其價金互相同意時，買賣契約即為成立。" }
+                    ]
+                  },
+                  "gift": {
+                    "name": "第四節 贈與",
+                    "data": [
+                      { "id": "民法第406條", "text": "稱贈與者，謂當事人約定，一方以自己之財產無償給與他方，他方允受之契約。" }
+                    ]
+                  }
+                }
+              },
+              "property": {
+                "name": "第三編 物權",
+                "sections": {
+                  "all": {
+                    "name": "物權通則與所有權",
+                    "data": [
+                      { "id": "民法第757條", "text": "物權除依法律或習慣外，不得創設。" },
+                      { "id": "民法第765條", "text": "所有人於法令限制之範圍內，得自由使用、收益、處分其所有物，並排除他人之干涉。" }
+                    ]
+                  }
+                }
+              },
+              "family": {
+                "name": "第四編 親屬",
+                "sections": {
+                  "marriage": {
+                    "name": "親屬通則與婚姻章",
+                    "data": [
+                      { "id": "民法第967條", "text": "稱直系血親者，謂己身所從出或從己身所出之血親。稱旁系血親者，謂非直系血親，而與己身同源出之血親。" },
+                      { "id": "民法第972條", "text": "婚約，應由男女當事人自行訂定。" }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        };
+
+        // 🎮 遊戲核心控制邏輯
+        let currentMenuLevel = 'subject'; 
         let selectedSubject = null;
         let selectedChapter = null;
         let selectedSection = null;
-
         let selectedIdCard = null;
         let currentLaw = [];         
         let isProcessingWrong = false;
         let wrongAnswers = []; 
         let matchedCount = 0; 
-
         let timerInterval = null;   
         let totalSeconds = 0;       
         let isTimerStarted = false; 
 
-        // 💡 方案二核心：從外部非同步讀取 JSON 題庫（GitHub Pages 專屬同域讀取版）
-        async function loadDatabase() {
-            try {
-                const jsonUrl = 'law.json'; 
-                
-                const response = await fetch(jsonUrl);
-                if (!response.ok) throw new Error('無法讀取法條檔案');
-                lawDatabase = await response.json();
-                renderMenu();
-            } catch (error) {
-                document.getElementById('menu-instruction').innerText = "❌ 載入失敗！提示：請確認專案後台的檔名是 law.json（無s）還是 laws.json（有s），且兩者放在同一個地方。";
-                console.error(error);
-            }
+        // 啟動時直接初始化選單
+        function initApp() {
+            renderMenu();
         }
 
         function renderMenu() {
@@ -265,11 +248,8 @@
         }
 
         function handleMenuBack() {
-            if (currentMenuLevel === 'section') {
-                currentMenuLevel = 'chapter';
-            } else if (currentMenuLevel === 'chapter') {
-                currentMenuLevel = 'subject';
-            }
+            if (currentMenuLevel === 'section') currentMenuLevel = 'chapter';
+            else if (currentMenuLevel === 'chapter') currentMenuLevel = 'subject';
             renderMenu();
         }
 
@@ -391,9 +371,7 @@
                 selectedIdCard = null;
                 matchedCount++;
 
-                if (matchedCount === currentLaw.length) {
-                    endGame();
-                }
+                if (matchedCount === currentLaw.length) endGame();
             } else {
                 isProcessingWrong = true;
                 firstCard.classList.add('wrong');
@@ -444,7 +422,8 @@
             document.getElementById('result-screen').classList.remove('hidden');
         }
 
-        document.addEventListener('DOMContentLoaded', loadDatabase);
+        // 網頁準備好就直接開跑
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
