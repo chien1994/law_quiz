@@ -54,7 +54,7 @@
         <button class="action-btn" onclick="goBackToMenu()">⬅️ 放棄測驗回選單</button>
         <h2 id="current-law-title" style="color: #F57C00; margin: 5px 0;"></h2>
         <div class="timer-badge" id="timer-display">⏱️ 測驗時間：0 秒</div>
-        <p>遊戲規則：點擊「條號」與對應的「內容」進行配對（起手點哪邊都可以），成功會變成綠色！</p>
+        <p>遊戲規則：點擊「條號」與對應的「內容」進行配對，成功會變成綠色！</p>
 
         <div class="game-container">
             <div class="column" id="id-column"></div>
@@ -91,88 +91,7 @@
     </div>
 
     <script>
-        // 📥 你的專屬法條資料庫（直接合併在網頁中，免除外部讀取限制！）
-        const lawDatabase = {
-          "constitutional": {
-            "title": "憲法",
-            "chapters": {
-              "ch2": {
-                "name": "第二章 人民之權利義務",
-                "sections": {
-                  "core": {
-                    "name": "核心權利與基本義務",
-                    "data": [
-                      { "id": "憲法第7條", "text": "中華民國人民，無分男女、宗教、種族、階級、黨派，在法律上一律平等。" },
-                      { "id": "憲法第22條", "text": "凡人民之其他自由及權利，不妨害社會秩序公共利益者，均受憲法之保障。" },
-                      { "id": "憲法第23條", "text": "以上各條列舉之自由權利，除為防止妨礙他人自由、避免緊急危難、維持社會秩序，或增進公共利益所必要者外，不得以法律限制之。" }
-                    ]
-                  }
-                }
-              }
-            }
-          },
-          "civil": {
-            "title": "民法",
-            "chapters": {
-              "general": {
-                "name": "第一編 總則",
-                "sections": {
-                  "core": {
-                    "name": "總則編核心條文",
-                    "data": [
-                      { "id": "民法第1條", "text": "民事，法律所未規定者，依習慣；無習慣者，依法理。" },
-                      { "id": "民法第6條", "text": "人之權利能力，始於出生，終於死亡。" },
-                      { "id": "民法第12條", "text": "滿十八歲為成年。" }
-                    ]
-                  }
-                }
-              },
-              "obligations_each": {
-                "name": "第二編 債 (各種之債)",
-                "sections": {
-                  "sale": {
-                    "name": "第一節 買賣 (通則與效力)",
-                    "data": [
-                      { "id": "民法第345條", "text": "稱買賣者，謂當事人約定一方移轉財產權於他方，他方支付價金之契約。當事人就標的物及其價金互相同意時，買賣契約即為成立。" }
-                    ]
-                  },
-                  "gift": {
-                    "name": "第四節 贈與",
-                    "data": [
-                      { "id": "民法第406條", "text": "稱贈與者，謂當事人約定，一方以自己之財產無償給與他方，他方允受之契約。" }
-                    ]
-                  }
-                }
-              },
-              "property": {
-                "name": "第三編 物權",
-                "sections": {
-                  "all": {
-                    "name": "物權通則與所有權",
-                    "data": [
-                      { "id": "民法第757條", "text": "物權除依法律或習慣外，不得創設。" },
-                      { "id": "民法第765條", "text": "所有人於法令限制之範圍內，得自由使用、收益、處分其所有物，並排除他人之干涉。" }
-                    ]
-                  }
-                }
-              },
-              "family": {
-                "name": "第四編 親屬",
-                "sections": {
-                  "marriage": {
-                    "name": "親屬通則與婚姻章",
-                    "data": [
-                      { "id": "民法第967條", "text": "稱直系血親者，謂己身所從出或從己身所出之血親。稱旁系血親者，謂非直系血親，而與己身同源出之血親。" },
-                      { "id": "民法第972條", "text": "婚約，應由男女當事人自行訂定。" }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        };
-
-        // 🎮 遊戲核心控制邏輯
+        let lawDatabase = null; 
         let currentMenuLevel = 'subject'; 
         let selectedSubject = null;
         let selectedChapter = null;
@@ -186,9 +105,27 @@
         let totalSeconds = 0;       
         let isTimerStarted = false; 
 
-        // 啟動時直接初始化選單
-        function initApp() {
-            renderMenu();
+        // 🛠️ 核心修正：利用動態相對路徑完美解決 GitHub Pages 讀取限制
+        async function loadDatabase() {
+            try {
+                // 1. 取得網頁目前所在的目錄路徑（會自動包含 /law_quiz/）
+                const path = window.location.pathname;
+                const directory = path.substring(0, path.lastIndexOf('/'));
+                
+                // 2. 組合出最精準的內部讀取網址
+                const jsonUrl = `${window.location.origin}${directory}/law.json`;
+                
+                console.log("正在從此路徑讀取資料庫:", jsonUrl);
+                
+                const response = await fetch(jsonUrl);
+                if (!response.ok) throw new Error('伺服器拒絕或找不到檔案');
+                
+                lawDatabase = await response.json();
+                renderMenu();
+            } catch (error) {
+                document.getElementById('menu-instruction').innerText = "❌ 讀取失敗！請確認 law.json 是否已成功上傳至同一個儲存庫。";
+                console.error(error);
+            }
         }
 
         function renderMenu() {
@@ -217,7 +154,6 @@
                 const subData = lawDatabase[selectedSubject];
                 instruction.innerText = `【${subData.title}】請選擇編別：`;
                 backBtn.classList.remove('hidden');
-                
                 breadcrumbs.innerText = subData.title;
                 breadcrumbs.classList.remove('hidden');
 
@@ -234,7 +170,6 @@
                 const chapData = subData.chapters[selectedChapter];
                 instruction.innerText = "請選擇精選考點微單元：";
                 backBtn.classList.remove('hidden');
-
                 breadcrumbs.innerText = `${subData.title} ➔ ${chapData.name}`;
 
                 Object.keys(chapData.sections).forEach(key => {
@@ -265,14 +200,8 @@
             document.getElementById('current-law-title').innerText = `⚖️ 測驗中：${part.name}`;
             document.getElementById('id-column').innerHTML = '';
             document.getElementById('content-column').innerHTML = '';
-            
-            selectedIdCard = null;
-            isProcessingWrong = false;
-            wrongAnswers = []; 
-            matchedCount = 0;
-
-            resetTimer();
-            initGame();
+            selectedIdCard = null; isProcessingWrong = false; wrongAnswers = []; matchedCount = 0;
+            resetTimer(); initGame();
 
             document.getElementById('retry-btn').onclick = function() { startGame(); };
             document.getElementById('main-menu').classList.add('hidden');
@@ -288,52 +217,23 @@
             renderMenu(); 
         }
 
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            totalSeconds = 0;
-            isTimerStarted = false;
-            document.getElementById('timer-display').innerText = "⏱️ 測驗時間：0 秒";
-        }
-
-        function startTimer() {
-            isTimerStarted = true;
-            timerInterval = setInterval(() => {
-                totalSeconds++;
-                document.getElementById('timer-display').innerText = `⏱️ 測驗時間：${formatTime(totalSeconds)}`;
-            }, 1000);
-        }
-
-        function formatTime(seconds) {
-            if (seconds < 60) return `${seconds} 秒`;
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins} 分 ${secs} 秒`;
-        }
+        function resetTimer() { clearInterval(timerInterval); timerInterval = null; totalSeconds = 0; isTimerStarted = false; document.getElementById('timer-display').innerText = "⏱️ 測驗時間：0 秒"; }
+        function startTimer() { isTimerStarted = true; timerInterval = setInterval(() => { totalSeconds++; document.getElementById('timer-display').innerText = `⏱️ 測驗時間：${formatTime(totalSeconds)}`; }, 1000); }
+        function formatTime(seconds) { if (seconds < 60) return `${seconds} 秒`; const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins} 分 ${secs} 秒`; }
 
         function initGame() {
             const idColumn = document.getElementById('id-column');
             const contentColumn = document.getElementById('content-column');
-            
             const shuffledIds = [...currentLaw].sort(() => Math.random() - 0.5);
             const shuffledContents = [...currentLaw].sort(() => Math.random() - 0.5);
 
             shuffledIds.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerText = item.id;
-                card.dataset.id = item.id; 
-                card.onclick = () => handleCardClick(card, 'id');
-                idColumn.appendChild(card);
+                const card = document.createElement('div'); card.className = 'card'; card.innerText = item.id; card.dataset.id = item.id;
+                card.onclick = () => handleCardClick(card, 'id'); idColumn.appendChild(card);
             });
-
             shuffledContents.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerText = item.text;
-                card.dataset.id = item.id; 
-                card.onclick = () => handleCardClick(card, 'content');
-                contentColumn.appendChild(card);
+                const card = document.createElement('div'); card.className = 'card'; card.innerText = item.text; card.dataset.id = item.id;
+                card.onclick = () => handleCardClick(card, 'content'); contentColumn.appendChild(card);
             });
         }
 
@@ -342,88 +242,42 @@
             if (!isTimerStarted) startTimer();
 
             if (!selectedIdCard) {
-                selectedIdCard = clickedCard;
-                selectedIdCard.dataset.type = columnType; 
-                clickedCard.classList.add('selected');
-                return;
+                selectedIdCard = clickedCard; selectedIdCard.dataset.type = columnType; clickedCard.classList.add('selected'); return;
             }
-
             if (selectedIdCard === clickedCard) {
-                selectedIdCard.classList.remove('selected');
-                selectedIdCard = null;
-                return;
+                selectedIdCard.classList.remove('selected'); selectedIdCard = null; return;
             }
-
             if (selectedIdCard.dataset.type === columnType) {
-                selectedIdCard.classList.remove('selected');
-                selectedIdCard = clickedCard;
-                selectedIdCard.dataset.type = columnType;
-                clickedCard.classList.add('selected');
-                return;
+                selectedIdCard.classList.remove('selected'); selectedIdCard = clickedCard; selectedIdCard.dataset.type = columnType; clickedCard.classList.add('selected'); return;
             }
 
-            const firstCard = selectedIdCard;
-            const secondCard = clickedCard;
-
+            const firstCard = selectedIdCard; const secondCard = clickedCard;
             if (firstCard.dataset.id === secondCard.dataset.id) {
-                firstCard.className = 'card matched';
-                secondCard.className = 'card matched';
-                selectedIdCard = null;
-                matchedCount++;
-
+                firstCard.className = 'card matched'; secondCard.className = 'card matched'; selectedIdCard = null; matchedCount++;
                 if (matchedCount === currentLaw.length) endGame();
             } else {
-                isProcessingWrong = true;
-                firstCard.classList.add('wrong');
-                secondCard.classList.add('wrong');
-
-                if (!wrongAnswers.includes(clickedCard.dataset.id)) {
-                    wrongAnswers.push(clickedCard.dataset.id);
-                }
-
-                setTimeout(() => {
-                    firstCard.classList.remove('wrong', 'selected');
-                    secondCard.classList.remove('wrong');
-                    selectedIdCard = null;
-                    isProcessingWrong = false;
-                }, 1000);
+                isProcessingWrong = true; firstCard.classList.add('wrong'); secondCard.classList.add('wrong');
+                if (!wrongAnswers.includes(clickedCard.dataset.id)) wrongAnswers.push(clickedCard.dataset.id);
+                setTimeout(() => { firstCard.classList.remove('wrong', 'selected'); secondCard.classList.remove('wrong'); selectedIdCard = null; isProcessingWrong = false; }, 1000);
             }
         }
 
         function endGame() {
-            clearInterval(timerInterval); 
-            const totalQ = currentLaw.length;
-            const wrongQ = wrongAnswers.length;
-            const correctQ = totalQ - wrongQ; 
-
-            document.getElementById('total-questions').innerText = totalQ;
-            document.getElementById('correct-count').innerText = correctQ >= 0 ? correctQ : 0;
-            document.getElementById('final-time').innerText = formatTime(totalSeconds);
-
-            const reviewList = document.getElementById('review-list');
-            const reviewSection = document.getElementById('review-section');
-            reviewList.innerHTML = '';
-
-            if (wrongAnswers.length === 0) {
-                reviewSection.style.display = 'none';
-            } else {
+            clearInterval(timerInterval);
+            const totalQ = currentLaw.length; const wrongQ = wrongAnswers.length; const correctQ = totalQ - wrongQ;
+            document.getElementById('total-questions').innerText = totalQ; document.getElementById('correct-count').innerText = correctQ >= 0 ? correctQ : 0; document.getElementById('final-time').innerText = formatTime(totalSeconds);
+            const reviewList = document.getElementById('review-list'); const reviewSection = document.getElementById('review-section'); reviewList.innerHTML = '';
+            if (wrongAnswers.length === 0) { reviewSection.style.display = 'none'; } else {
                 reviewSection.style.display = 'block';
                 wrongAnswers.forEach(wrongId => {
                     const target = currentLaw.find(item => item.id === wrongId);
-                    if (target) {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `<td><span class="wrong-tag">${target.id}</span></td><td>${target.text}</td>`;
-                        reviewList.appendChild(row);
-                    }
+                    if (target) { const row = document.createElement('tr'); row.innerHTML = `<td><span class="wrong-tag">${target.id}</span></td><td>${target.text}</td>`; reviewList.appendChild(row); }
                 });
             }
-
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('hidden'); document.getElementById('result-screen').classList.remove('hidden');
         }
 
-        // 網頁準備好就直接開跑
-        document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', loadDatabase);
     </script>
 </body>
 </html>
