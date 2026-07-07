@@ -193,18 +193,17 @@
         let totalSeconds = 0;       
         let isTimerStarted = false; 
 
-        // 💡 方案二核心：從外部非同步讀取 JSON 題庫（專屬絕對網址終極版）
+        // 💡 方案二核心：從外部非同步讀取 JSON 題庫（GitHub Pages 專屬同域讀取版）
         async function loadDatabase() {
             try {
-                // 🛠️ 已經直接換成你剛剛抓到的絕對網址囉！
-                const jsonUrl = 'https://github.com/chien1994/law_quiz/raw/refs/heads/main/law.json';
+                const jsonUrl = 'law.json'; 
                 
                 const response = await fetch(jsonUrl);
                 if (!response.ok) throw new Error('無法讀取法條檔案');
                 lawDatabase = await response.json();
                 renderMenu();
             } catch (error) {
-                document.getElementById('menu-instruction').innerText = "❌ 載入失敗！提示：請確認絕對網址是否正確，或 laws.json 格式是否有錯。";
+                document.getElementById('menu-instruction').innerText = "❌ 載入失敗！提示：請確認專案後台的檔名是 law.json（無s）還是 laws.json（有s），且兩者放在同一個地方。";
                 console.error(error);
             }
         }
