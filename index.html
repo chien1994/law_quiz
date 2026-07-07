@@ -193,16 +193,22 @@
         let totalSeconds = 0;       
         let isTimerStarted = false; 
 
-        // 💡 方案二核心：從外部非同步讀取 JSON 題庫
+        // 💡 方案二核心：從外部非同步讀取 JSON 題庫（線上路徑防呆優化版）
         async function loadDatabase() {
             try {
-                // 正式上線後，這裡會改成 GitHub 的網址。本地測試先用本地檔案
-                const response = await fetch('laws.json');
+                // 優先嘗試直接讀取
+                let response = await fetch('laws.json');
+                
+                // 如果直接讀取失敗，自動嘗試加上相對路徑 `./` 的防呆做法
+                if (!response.ok) {
+                    response = await fetch('./laws.json');
+                }
+                
                 if (!response.ok) throw new Error('無法讀取法條檔案');
                 lawDatabase = await response.json();
                 renderMenu();
             } catch (error) {
-                document.getElementById('menu-instruction').innerText = "❌ 載入失敗！提示：本地測試需透過「本地伺服器」環境啟動，或直接部署至網站平台。";
+                document.getElementById('menu-instruction').innerText = "❌ 載入失敗！提示：請確認 laws.json 是否與 index.html 放在同一個 GitHub 儲存庫內。";
                 console.error(error);
             }
         }
